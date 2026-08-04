@@ -658,4 +658,225 @@ function tick_dragging_layer(_asslayer) {
 	layer_set_visible(_asslayer, filedrag);
 }
 
+/// @desc Monster of a function i found somewhere that given a sprite it returns an array with all it's colors
+function sprite_get_colors(_sprite, _subimg) {
+	var _width = sprite_get_width(_sprite);
+	var _height = sprite_get_height(_sprite);
+	var _surf = surface_create(_width, _height);
+	surface_set_target(_surf);
+	draw_clear_alpha(c_black, 0);
+	draw_sprite(_sprite, _subimg, 0, 0);
+	surface_reset_target();
+	var _buff = buffer_create(_width * _height * 4, buffer_fixed, 1);
+	buffer_get_surface(_buff, _surf, 0);
+	surface_free(_surf);
+	var _unique_colors = {};
+	var _color_array = [];
+	for (var i = 0; i < buffer_get_size(_buff); i += 4) {
+		if (buffer_peek(_buff, i + 3, buffer_u8) > 0) {
+			var _col = (buffer_peek(_buff, i + 2, buffer_u8) << 16) | (buffer_peek(_buff, i + 1, buffer_u8) << 8) | buffer_peek(_buff, i, buffer_u8);
+			if (!variable_struct_exists(_unique_colors, string(_col))) {
+				variable_struct_set(_unique_colors, string(_col), true);
+				array_push(_color_array, _col);
+			}
+		}
+	}
+	buffer_delete(_buff);
+	return _color_array;
+}
+
+/// @desc Uses magic to convert a color number to a HEX string
+function color_to_hex(_col) {
+	var _hex_chars = "0123456789ABCDEF";
+	return "#" + 
+	string_char_at(_hex_chars, ((_col >> 4) & 15) + 1) + 
+	string_char_at(_hex_chars, (_col & 15) + 1) + 
+	string_char_at(_hex_chars, ((_col >> 12) & 15) + 1) + 
+	string_char_at(_hex_chars, ((_col >> 8) & 15) + 1) + 
+	string_char_at(_hex_chars, ((_col >> 20) & 15) + 1) + 
+	string_char_at(_hex_chars, ((_col >> 16) & 15) + 1);
+}
+
+/// @desc takes a color and splits it into a struct with hue, sat, val (i have no joke for this one srry)
+function color_to_hsv(_col) {
+	return {
+		hex: color_to_hex(_col),
+		hue: color_get_hue(_col),
+		sat: color_get_saturation(_col),
+		val: color_get_value(_col)
+	};
+}
+
+/// @desc Super specific function thst removes all comments from a gml file array
+function clear_gml_comments(_arr) {
+	var _array = variable_clone(_arr);
+	var _in_block = false;
+	var _in_string = false;
+	var _string_char = "";
+	
+	for (var i = 0; i < array_length(_array); i++) {
+		var _line = _array[i];
+		var _new_line = "";
+		var _len = string_length(_line);
+		var j = 1;
+		
+		while (j <= _len) {
+			var _char = string_char_at(_line, j);
+			var _next_char = (j < _len) ? string_char_at(_line, j + 1) : "";
+			
+			if (_in_block) {
+				if (_char == "*" && _next_char == "/") {
+					_in_block = false;
+					j += 2;
+				} else {
+					j++;
+				}
+			} else if (_in_string) {
+				if (_char == "\\") {
+					_new_line += _char;
+					if (_next_char != "") {
+						_new_line += _next_char;
+						j++;
+					}
+					j++;
+				} else if (_char == _string_char) {
+					_in_string = false;
+					_new_line += _char;
+					j++;
+				} else {
+					_new_line += _char;
+					j++;
+				}
+			} else {
+				if (_char == "/" && _next_char == "/") {
+					break;
+				} else if (_char == "/" && _next_char == "*") {
+					_in_block = true;
+					j += 2;
+				} else if (_char == "\"" || _char == "'") {
+					_in_string = true;
+					_string_char = _char;
+					_new_line += _char;
+					j++;
+				} else {
+					_new_line += _char;
+					j++;
+				}
+			}
+		}
+		_array[i] = _new_line;
+	}
+	
+	return _array;
+}
+
+/// @desc Ungodly specific function that removes all comments from a gml file array except the sigle ones on a new line
+function clear_gml_comments_except_lonely_ones(_arr) {
+	var _array = variable_clone(_arr);
+	var _in_block = false;
+	var _in_string = false;
+	var _string_char = "";
+	
+	for (var i = 0; i < array_length(_array); i++) {
+		var _line = _array[i];
+		var _new_line = "";
+		var _len = string_length(_line);
+		var j = 1;
+		var _has_code = false;
+		
+		while (j <= _len) {
+			var _char = string_char_at(_line, j);
+			var _next_char = (j < _len) ? string_char_at(_line, j + 1) : "";
+			
+			if (_in_block) {
+				if (_char == "*" && _next_char == "/") {
+					_in_block = false;
+					j += 2;
+				} else {
+					j++;
+				}
+			} else if (_in_string) {
+				if (_char == "\\") {
+					_new_line += _char;
+					if (_next_char != "") {
+						_new_line += _next_char;
+						j++;
+					}
+					j++;
+				} else if (_char == _string_char) {
+					_in_string = false;
+					_new_line += _char;
+					j++;
+				} else {
+					_new_line += _char;
+					j++;
+				}
+				_has_code = true;
+			} else {
+				if (_char == "/" && _next_char == "/") {
+					if (!_has_code) {
+						_new_line += string_copy(_line, j, _len - j + 1);
+					}
+					break;
+				} else if (_char == "/" && _next_char == "*") {
+					_in_block = true;
+					j += 2;
+				} else if (_char == "\"" || _char == "'") {
+					_in_string = true;
+					_string_char = _char;
+					_new_line += _char;
+					j++;
+					_has_code = true;
+				} else {
+					_new_line += _char;
+					j++;
+					if (ord(_char) > 32) {
+						_has_code = true;
+					}
+				}
+			}
+		}
+		_array[i] = _new_line;
+	}
+	
+	return _array;
+}
+
+/// @desc same as gpu_set_scissor but takes two coords. I HATE HATE HATE HATE functions that take width and height and not second position!!!!!!!!!!
+function gpu_set_scissor_alt(_x, _y, _x2, _y2) {
+	gpu_set_scissor(_x, _y, _x2 - _x, _y2 - _y);
+}
+
+function colorswap_shader(_original_cols, _new_cols) {
+	var _len = array_length(_original_cols);
+	
+	if (_len > 2048) {
+		_len = 2048;
+	}
+	
+	var _surf_orig = surface_create(_len, 1);
+	surface_set_target(_surf_orig);
+	draw_clear_alpha(c_black, 0);
+	for (var _i = 0; _i < _len; _i++) {
+		draw_point_color(_i, 0, _original_cols[_i]);
+	}
+	surface_reset_target();
+	
+	var _surf_new = surface_create(_len, 1);
+	surface_set_target(_surf_new);
+	draw_clear_alpha(c_black, 0);
+	for (var _i = 0; _i < _len; _i++) {
+		draw_point_color(_i, 0, _new_cols[_i]);
+	}
+	surface_reset_target();
+	
+	shader_set(shd_replacer);
+	
+	texture_set_stage(shader_get_sampler_index(shd_replacer, "tex_original"), surface_get_texture(_surf_orig));
+	texture_set_stage(shader_get_sampler_index(shd_replacer, "tex_replacement"), surface_get_texture(_surf_new));
+	shader_set_uniform_f(shader_get_uniform(shd_replacer, "u_color_count"), _len);
+	
+	return [_surf_orig, _surf_new];
+}
+
 // P.S: Yes i had fun writing the comments

@@ -278,6 +278,17 @@ function initialize_sprite_selector(_allowEmptySelection, _defaultValue, _action
 	obj_SpritePicker.trigger();
 }
 
+function initialize_sprite_selector_colors(_allowEmptySelection, _defaultValue, _actionID, _ass = id) {
+	_ass.focus_secondary = "SelectSprite" + _actionID;
+	layer_set_visible(layer_get_id("SelectSprite"), true);
+	layer_text_text(get_ui_id("Exploit", "atk_addnewC", false), "SELECT SPRITE")
+	layer_set_visible(layer_get_id("Exploit"), true);
+	instance_activate_object(obj_SpritePicker_Colors);
+	obj_SpritePicker_Colors.allow_empty = _allowEmptySelection;
+	obj_SpritePicker_Colors.default_value = _defaultValue;
+	obj_SpritePicker_Colors.trigger();
+}
+
 function initialize_window_selector(_allowEmptySelection, _defaultValue, _actionID, _ass = id) {
 	_ass.focus_secondary = "SelectWindow" + _actionID;
 	layer_set_visible(layer_get_id("SelectWindow"), true);

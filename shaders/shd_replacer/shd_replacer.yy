@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shd_replacer",
+  "name":"shd_replacer",
+  "parent":{
+    "name":"Shaders",
+    "path":"folders/Shaders.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

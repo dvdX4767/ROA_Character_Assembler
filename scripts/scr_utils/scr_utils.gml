@@ -7,6 +7,7 @@
 #macro maybe irandom(1) == 0
 #macro perhaps irandom(9) == 0
 #macro unlikely irandom(99) == 0
+#macro elif else if
 
 /// @desc							Converts a string into a HEX value
 /// @param {String} rgb_string		The string formatted as RRRGGGBBB (0-255)
@@ -896,4 +897,23 @@ function mouse_in_rectangle(_x1, _y1, _x2, _y2, _debug = false) {
 /// @param {Any} output		The value to pass
 function print(_msg) {
 	show_debug_message(_msg);
+}
+
+/// @desc						Checks if a substring is inside a given string
+/// @param {String} substr		The string to look for
+/// @param {String} str			The string cheked
+function string_contains(_substr, _str) {
+	return string_pos(_substr, _str) != 0;
+}
+
+/// @desc	Returns the string position AFTER the found substring, returns the first position if subrstring is not present
+/// @param {String} substr		The string to look for
+/// @param {String} str			The string cheked
+function string_pos_alt(_substr, _str) {
+	var _pos = string_pos(_substr, _str);
+	if _pos == 0 {
+		return 0;
+	} else {
+		return _pos + string_length(_substr);
+	}
 }
