@@ -1,0 +1,16 @@
+{
+	"parent": "gml1",
+	"name": "Rivals of Aether",
+	"hasTernaryOperator": true,
+	"hasTemplateStrings": true,
+	"hasDefineArgs": true,
+	"additionalKeywords": ["wait", "in", "try", "catch", "throw"],
+	
+	"indexingMode": "directory",
+	"resetLineCounterOnDefine": false,
+	"projectRegex": "^config\\.ini$",
+	
+	"helpURL": "https://www.rivalsofaether.com/workshop/",
+	"apiFiles": ["api.gml", "const.gml", "default.gml"],
+	"assetFiles": []
+}

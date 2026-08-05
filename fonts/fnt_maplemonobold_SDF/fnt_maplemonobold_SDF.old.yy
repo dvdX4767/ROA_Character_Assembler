@@ -1,6 +1,6 @@
 {
   "$GMFont":"",
-  "%Name":"fnt_maplemono_SDF",
+  "%Name":"fnt_maplemonobold_SDF",
   "AntiAlias":0,
   "applyKerning":0,
   "ascender":16,
@@ -369,7 +369,7 @@
   "last":0,
   "lineHeight":21,
   "maintainGms1Font":false,
-  "name":"fnt_maplemono_SDF",
+  "name":"fnt_maplemonobold_SDF",
   "parent":{
     "name":"Fonts",
     "path":"folders/Fonts.yy",
