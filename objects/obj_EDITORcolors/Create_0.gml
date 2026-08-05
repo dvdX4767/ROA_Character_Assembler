@@ -507,8 +507,8 @@ function def_palette_list() {
 
 function def_pal_color_labels(_pal, _yoff, _i) {
 	gpu_set_scissor_alt(99, clamp(55 + _yoff, 98, 755), 323, clamp(86 + _yoff, 98, 755));
-	
-	for (var i = 0; i < array_length(_pal.colors); i++) {
+	var i;
+	for (i = 0; i < array_length(_pal.colors); i++) {
 		var _nowX = 102 + i * 35 + scrollers.pcol[_i];
 		var _col = multiplexer(_pal.main_id == i, c_white, c_yellow);
 		if draw_color_label_interactive(_nowX, 55 + _yoff, _pal.colors[i], 0.5, 0.5, _col, cr_handpoint, false) {
@@ -520,6 +520,13 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 			}
 		}
 	}
+	
+	var _nowX = 102 + i * 35 + scrollers.pcol[_i];
+	var _col = c_white;
+	if draw_color_label_interactive(_nowX, 55 + _yoff, c_black, 0.5, 0.5, c_white, cr_handpoint, false) {
+		_col = c_yellow;
+	}
+	draw_sprite_ext(spr_plus, 0, 188, 68 * _yoff, 0.38, 0.38, 0, _col, 1);
 	gpu_set_scissor_alt(5, 98, 333, 755);
 }
 
