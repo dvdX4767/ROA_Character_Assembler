@@ -48,13 +48,20 @@ if mouse_in_rectangle(312, 0, 986+312, 60){
 	repeat array_length(tabs){
 		var tb = tabs[_g];
 		if mouse_in_rectangle(tab_view + 314 + 200*_g + 5, 10, tab_view + 314 + 200*_g + 190, 62){
-			if mouse_in_rectangle(tab_view + 314 + 200*_g + 170, 30, tab_view + 314 + 200*_g + 180, 48) hovered_x = _g;
+			if mouse_in_rectangle(tab_view + 314 + 200*_g + 165, 30, tab_view + 314 + 200*_g + 185, 48) hovered_x = _g;
 			if mouse_check_button_pressed(mb_left){
 				if hovered_x == _g{
 					instance_destroy(tb);
 					array_delete_value(tabs, tb);
+					if tab == tb{
+						if array_length(tabs) tab = tabs[array_length(tabs)-1]
+						else tab = noone;
+					}
 					break;
-				}else tab = tb;
+				}else{
+					tab = tb;
+					tab.showcursors = 0;
+				}
 			}
 		}
 		_g++;
@@ -74,8 +81,13 @@ function create_tab(scrpt){
 	tab = instance_create_layer(0, 0, layer_get_id("layer_tabs"), obj_ScriptTab);
 	tab.name = scrpt.name;
 	tab.filepath = scrpt.fullpath;
+	tab.attack = scrpt.attack;
+	tab.data = archive_fetch_file((scrpt.attack? AP.ATTACKS: AP.SCRIPTS), scrpt.fullpath);
+	tab.filestruct = archive_fetch_filestruct((scrpt.attack? AP.ATTACKS: AP.SCRIPTS), scrpt.fullpath);
+	tab.main_obj = self;
 	array_push(tabs, tab)
 }
+
 
 
 function reload_scripts(){

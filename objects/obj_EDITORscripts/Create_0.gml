@@ -29,7 +29,8 @@ repeat array_length(_scrps){
 		name : _name,
 		width : string_width(_name),
 		fullpath : _path,
-		full_string : "|  " + _name
+		full_string : "|  " + _name,
+		attack: false
 	});
 	_i++;
 }
@@ -44,7 +45,8 @@ repeat array_length(_scrps){
 		name : _name,
 		width : string_width(_name),
 		fullpath : _path,
-		full_string : "|| " + _name
+		full_string : "|| " + _name,
+		attack: true
 	});
 	_i++;
 }
@@ -53,6 +55,8 @@ repeat array_length(_scrps){
 script = {
 	name: "",
 	width: 0,
-	fullpath
+	fullpath: "",
+	full_string: "",
+	attack: bool
 }
 */

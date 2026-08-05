@@ -77,6 +77,8 @@ for (var i = 0; i < array_length(global.saved_paths); i++) {
 	}
 }
 
+load_dialect();
+
 function load_templates() {
 	if !variable_global_exists("selected_template") {global.selected_template = 0;}
 	if !directory_exists("templates") {

@@ -1,0 +1,1 @@
+surface_free(text_surf);
