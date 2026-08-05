@@ -94,6 +94,7 @@
     {"name":"spr_trash","order":21,"path":"sprites/spr_trash/spr_trash.yy",},
     {"name":"spr_UIbox_clear","order":15,"path":"sprites/spr_UIbox_clear/spr_UIbox_clear.yy",},
     {"name":"spr_UIbox","order":3,"path":"sprites/spr_UIbox/spr_UIbox.yy",},
+    {"name":"spr_warn","order":21,"path":"sprites/spr_warn/spr_warn.yy",},
     {"name":"spr_white","order":2,"path":"sprites/spr_white/spr_white.yy",},
     {"name":"spr_windows","order":11,"path":"sprites/spr_windows/spr_windows.yy",},
   ],

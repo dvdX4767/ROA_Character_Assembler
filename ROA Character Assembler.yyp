@@ -145,6 +145,7 @@
     {"id":{"name":"spr_trash","path":"sprites/spr_trash/spr_trash.yy",},},
     {"id":{"name":"spr_UIbox_clear","path":"sprites/spr_UIbox_clear/spr_UIbox_clear.yy",},},
     {"id":{"name":"spr_UIbox","path":"sprites/spr_UIbox/spr_UIbox.yy",},},
+    {"id":{"name":"spr_warn","path":"sprites/spr_warn/spr_warn.yy",},},
     {"id":{"name":"spr_white","path":"sprites/spr_white/spr_white.yy",},},
     {"id":{"name":"spr_windows","path":"sprites/spr_windows/spr_windows.yy",},},
   ],
