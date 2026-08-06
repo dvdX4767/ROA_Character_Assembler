@@ -260,6 +260,12 @@ function alt_loader_step(_count, _file, i) {
 			}
 			
 			alts[real(_posA)].colors[_posP] = make_colour_rgb(_posR, _posG, _posB);
+			
+			if _posP >= array_length(palettes) {
+				palettes[_posP] = palette_create(string("UNNAMED {0}", array_length(palettes)));
+				palettes[_posP].main_id = -1;
+				scrollers.pcol[_posP] = 0;
+			}
 		}
 	}
 }
@@ -318,8 +324,8 @@ function palette_finalizer() {
 	for (var i = 0; i < array_length(palettes); i++) {
 		var _pal = palettes[i];
 		if array_length(_pal.colors) == 0 {
-			array_delete(palettes, i, 1);
-			i--;
+			//array_delete(palettes, i, 1);
+			//i--;
 			continue;
 		}
 		if array_length(_pal.max_diff_hsv) == 0 {_pal.max_diff_hsv = [0, 0, 0]}
@@ -416,6 +422,50 @@ function tick_scrollers() {
 	scrollers.alts = clamp(scrollers.alts, max(array_length(alts) - 6, 0) * -98, 0);
 	scrollers.pals = clamp(scrollers.pals, max(array_length(palettes) - 6, 0) * -98, 0);
 	scrollers.cols = clamp(scrollers.cols, max(array_length(colors_data) - 11, 0) * -35, 0);
+}
+
+function calculate_new_delta(_palID) {
+    var _pal = palettes[_palID];
+    
+    if _pal.main_id != -1 {
+        var _highest_diff_h = 0;
+        var _highest_diff_s = 0;
+        var _highest_diff_v = 0;
+        
+        var _main_col = _pal.colors[_pal.main_id];
+        
+        for (var i = 0; i < array_length(_pal.colors); i++) {
+            var _diff = color_difference_hsv(_main_col, _pal.colors[i]);
+            
+            _highest_diff_h = max(_highest_diff_h , _diff[0]);
+            _highest_diff_s = max(_highest_diff_s , _diff[1]);
+            _highest_diff_v = max(_highest_diff_v , _diff[2]);
+        }
+        
+        return [_highest_diff_h + 1, _highest_diff_s + 1, _highest_diff_v + 1];
+    }else return undefined;
+}
+
+function color_difference_hsv(_col1, _col2) {
+	var _diff_h = abs(color_h(_col1) - color_h(_col2));
+	
+	return [
+		max(round((min(_diff_h, 256 - _diff_h) / 255) * 100)),
+		max(round((abs(color_s(_col1) - color_s(_col2)) / 255) * 100)),
+		max(round((abs(color_v(_col1) - color_v(_col2)) / 255) * 100))
+	];
+}
+
+function add_color_to_palette(_palID, _color) {
+	array_push(palettes[_palID].colors, _color);
+	var _newdiff = calculate_new_delta(_palID);
+	var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},", _palID), false);
+	var _newline = string("set_color_profile_slot_range({0}, {1}, {2}, {3});", _palID, _newdiff[0], _newdiff[1], _newdiff[2]);
+	if _line == -1 {
+		archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _newline);
+	} else if _line != -2 {
+		archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, _newline);
+	}
 }
 
 // DRAW EVENT FUNCTIONS
@@ -525,8 +575,11 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 	var _col = c_white;
 	if draw_color_label_interactive(_nowX, 55 + _yoff, c_black, 0.5, 0.5, c_white, cr_handpoint, false) {
 		_col = c_yellow;
+		if mouse_check_button_pressed(mb_left) {
+			
+		}
 	}
-	draw_sprite_ext(spr_plus, 0, 188, 68 * _yoff, 0.38, 0.38, 0, _col, 1);
+	draw_sprite_ext(spr_plus, 0, 16 + _nowX, 55 + 16 + _yoff, 0.38, 0.38, 0, _col, 1);
 	gpu_set_scissor_alt(5, 98, 333, 755);
 }
 
@@ -571,10 +624,15 @@ function def_alt_list() {
 	if _hovering {
 		set_cursor(cr_handpoint);
 		if mouse_check_button_pressed(mb_left) {
-			array_push(palettes, palette_create(string("UNNAMED {0}", array_length(palettes))));
-			palettes[array_length(palettes) - 1].main_id = -1;
+			array_push(alts, alt_create(string("UNNAMED {0}", array_length(alts))));
 			for (var j = 1; j < array_length(alts); j++) {
-				archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0}, {1}, 255, 0, 255)", j, array_length(palettes) - 1));
+				archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0}, {1}, 255, 0, 255)", j, array_length(alts) - 1));
+			}
+			var _line = archive_fetch_gml_string_pos(AP.SCRIPTS, get_full_path("scripts/colors.gml"), "set_num_palettes(", false);
+			if _line == -1 {
+				archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_num_palettes({0});", array_length(alts)));
+			} else if _line != -2 {
+				archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_num_palettes({0});", array_length(alts)));
 			}
 		}
 	}
