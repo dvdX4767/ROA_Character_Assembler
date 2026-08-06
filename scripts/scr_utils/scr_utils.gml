@@ -917,3 +917,39 @@ function string_pos_alt(_substr, _str) {
 		return _pos + string_length(_substr);
 	}
 }
+
+/// @desc							Wrapper function for color_get_hue()
+/// @param {Constant.Color} col		The color to check
+function color_h(_col) {
+	return color_get_hue(_col)
+}
+
+/// @desc							Wrapper function for color_get_saturation()
+/// @param {Constant.Color} col		The color to check
+function color_s(_col) {
+	return color_get_saturation(_col)
+}
+
+/// @desc							Wrapper function for color_get_value()
+/// @param {Constant.Color} col		The color to check
+function color_v(_col) {
+	return color_get_value(_col)
+}
+
+/// @desc							Wrapper function for color_get_red()
+/// @param {Constant.Color} col		The color to check
+function color_r(_col) {
+	return color_get_red(_col)
+}
+
+/// @desc							Wrapper function for color_get_green()
+/// @param {Constant.Color} col		The color to check
+function color_g(_col) {
+	return color_get_green(_col)
+}
+
+/// @desc							Wrapper function for color_get_blue()
+/// @param {Constant.Color} col		The color to check
+function color_b(_col) {
+	return color_get_blue(_col)
+}
