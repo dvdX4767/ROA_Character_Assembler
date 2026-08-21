@@ -84,6 +84,7 @@
     {"name":"spr_pause","order":9,"path":"sprites/spr_pause/spr_pause.yy",},
     {"name":"spr_play","order":8,"path":"sprites/spr_play/spr_play.yy",},
     {"name":"spr_plus","order":5,"path":"sprites/spr_plus/spr_plus.yy",},
+    {"name":"spr_pointer","order":21,"path":"sprites/spr_pointer/spr_pointer.yy",},
     {"name":"spr_rectangle","order":18,"path":"sprites/spr_rectangle/spr_rectangle.yy",},
     {"name":"spr_rectanglr_round","order":19,"path":"sprites/spr_rectanglr_round/spr_rectanglr_round.yy",},
     {"name":"spr_save","order":20,"path":"sprites/spr_save/spr_save.yy",},

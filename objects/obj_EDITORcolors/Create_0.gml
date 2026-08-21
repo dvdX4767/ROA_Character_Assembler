@@ -21,6 +21,15 @@ selected_palette = 0;
 selected_alt = 0;
 selected = archive_fetch_file(AP.MAIN, get_full_path("portrait.png"));
 can_interact = true;
+interaction = {
+	type: "",
+	subtype: 0,
+	x_scale: 1,
+	y_scale: 1,
+	box_x: 0,
+	box_y: 0,
+	diff_y: 0,
+}
 selected_path = "portrait.png";
 selection_return = "";
 focus_secondary = ""; 
@@ -450,15 +459,16 @@ function color_difference_hsv(_col1, _col2) {
 	var _diff_h = abs(color_h(_col1) - color_h(_col2));
 	
 	return [
-		max(round((min(_diff_h, 256 - _diff_h) / 255) * 100)),
-		max(round((abs(color_s(_col1) - color_s(_col2)) / 255) * 100)),
-		max(round((abs(color_v(_col1) - color_v(_col2)) / 255) * 100))
+		max(0 ,round((min(_diff_h, 256 - _diff_h) / 255) * 100)),
+		max(0, round((abs(color_s(_col1) - color_s(_col2)) / 255) * 100)),
+		max(0, round((abs(color_v(_col1) - color_v(_col2)) / 255) * 100))
 	];
 }
 
 function add_color_to_palette(_palID, _color) {
 	array_push(palettes[_palID].colors, _color);
 	var _newdiff = calculate_new_delta(_palID);
+	if _newdiff == undefined {exit;}
 	var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},", _palID), false);
 	var _newline = string("set_color_profile_slot_range({0}, {1}, {2}, {3});", _palID, _newdiff[0], _newdiff[1], _newdiff[2]);
 	if _line == -1 {
@@ -481,7 +491,7 @@ function def_sprite_preview() {
 }
 
 function def_zoom_scroller() {
-	if mouse_in_rectangle(984, 415, 1363, 444) {
+	if mouse_in_rectangle(984, 415, 1363, 444) and can_interact {
 		set_cursor(cr_size_we);
 		if mouse_check_button(mb_left) {
 			zoom = clamp(((mouse_x - 1002) / 334) * zoom_max, 0.5, zoom_max);
@@ -490,7 +500,7 @@ function def_zoom_scroller() {
 	}
 	layer_sprite_x(get_ui_id("Assets_2", "graphic_41275CE3", true), 1002 + (334 * ((zoom) / (zoom_max))));
 
-	if mouse_in_uibox("Assets_2", "graphic_5C1C3B17", cr_handpoint, true) {
+	if can_interact and mouse_in_uibox("Assets_2", "graphic_5C1C3B17", cr_handpoint, true) {
 		initialize_sprite_selector_colors(true, [archive_fetch_file(AP.MAIN, get_full_path("portrait.png")), ("portrait.png")], "Spr");
 	}
 }
@@ -526,7 +536,7 @@ function def_palette_list() {
 		draw_text_transformed_colour(103, 28 + _nowY, "[Left Click] Edit Color\n[Right Click] Set Main Color", 0.16, 0.16, 0, c_gray, c_gray, c_gray, c_gray, 1);
 		def_pal_color_labels(_pal, _nowY, i);
 		
-		if mouse_in_rectangle(7, _nowY, 7 + (64 * 5), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) {
+		if mouse_in_rectangle(7, _nowY, 7 + (64 * 5), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) and can_interact {
 			selected_palette = i;
 		}
 	}
@@ -539,7 +549,7 @@ function def_palette_list() {
 		draw_text_ext_transformed(44, 4 + _nowY, "ADD NEW", 999, 9999, 0.39, 0.39, 0);
 		draw_text_ext_transformed_color(280, 4 + _nowY, string("{0}/8", array_length(palettes)), 999, 9999, 0.39, 0.39, 0, c_gray, c_gray, c_gray, c_gray, 1);
 	
-		if _hovering {
+		if _hovering and can_interact {
 			set_cursor(cr_handpoint);
 			if mouse_check_button_pressed(mb_left) {
 				array_push(palettes, palette_create(string("UNNAMED {0}", array_length(palettes))));
@@ -561,7 +571,7 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 	for (i = 0; i < array_length(_pal.colors); i++) {
 		var _nowX = 102 + i * 35 + scrollers.pcol[_i];
 		var _col = multiplexer(_pal.main_id == i, c_white, c_yellow);
-		if draw_color_label_interactive(_nowX, 55 + _yoff, _pal.colors[i], 0.5, 0.5, _col, cr_handpoint, false) {
+		if draw_color_label_interactive(_nowX, 55 + _yoff, _pal.colors[i], 0.5, 0.5, _col, cr_handpoint, false) and can_interact {
 			if mouse_check_button_pressed(mb_left) {
 				//edit color
 			} elif mouse_check_button_pressed(mb_right) {
@@ -573,10 +583,10 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 	
 	var _nowX = 102 + i * 35 + scrollers.pcol[_i];
 	var _col = c_white;
-	if draw_color_label_interactive(_nowX, 55 + _yoff, c_black, 0.5, 0.5, c_white, cr_handpoint, false) {
+	if draw_color_label_interactive(_nowX, 55 + _yoff, c_black, 0.5, 0.5, c_white, cr_handpoint, false) and can_interact {
 		_col = c_yellow;
 		if mouse_check_button_pressed(mb_left) {
-			
+			show_dialogbox("addPalCol", _i, _nowX + 16, 55 + _yoff + 16, 6, 3, 16);
 		}
 	}
 	draw_sprite_ext(spr_plus, 0, 16 + _nowX, 55 + 16 + _yoff, 0.38, 0.38, 0, _col, 1);
@@ -605,7 +615,7 @@ function def_alt_list() {
 			def_alt_color_labels(_pal, _nowY, false);
 		}
 		
-		if mouse_in_rectangle(342, _nowY, 342 + (64 * 5.9), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) {
+		if mouse_in_rectangle(342, _nowY, 342 + (64 * 5.9), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) and can_interact {
 			selected_alt = i;
 			needs_update = true;
 		}
@@ -621,7 +631,7 @@ function def_alt_list() {
 	draw_text_ext_transformed_color(712, 4 + _nowY, string("{0}/32", array_length(alts)), 999, 9999, 0.39, 0.39, 0, c_gray, c_gray, c_gray, c_gray, 1);
 	draw_set_halign(fa_left);
 	
-	if _hovering {
+	if _hovering and can_interact {
 		set_cursor(cr_handpoint);
 		if mouse_check_button_pressed(mb_left) {
 			array_push(alts, alt_create(string("UNNAMED {0}", array_length(alts))));
@@ -645,7 +655,7 @@ function def_alt_color_labels(_pal, _yoff, _isdef) {
 	if !_isdef {
 		for (var i = 0; i < array_length(_pal.colors); i++) {
 			var _nowX = 350 + i * 45;
-			if draw_color_label_interactive(_nowX, 45 + _yoff, _pal.colors[i], 0.63, 0.63, c_yellow, cr_handpoint, false) {
+			if draw_color_label_interactive(_nowX, 45 + _yoff, _pal.colors[i], 0.63, 0.63, c_yellow, cr_handpoint, false) and can_interact {
 				if mouse_check_button_pressed(mb_left) {
 					// edit
 				}
@@ -660,4 +670,46 @@ function def_alt_color_labels(_pal, _yoff, _isdef) {
 		}
 	}
 	gpu_set_scissor_alt(339, 97, 723, 755);
+}
+
+function show_dialogbox(_type, _subtype, _x, _y, _xscale, _yscale, _ydiff) {
+	can_interact = false;
+	interaction.type = _type;
+	interaction.subtype = _subtype;
+	interaction.box_x = _x;
+	interaction.box_y = _y;
+	interaction.x_scale = _xscale;
+	interaction.y_scale = _yscale;
+	interaction.diff_y = _ydiff;
+}
+
+function def_dialogbox() {
+	if !can_interact {
+		//interaction.box_x = mouse_x_diff(true);
+		//interaction.box_y = mouse_y_diff(true);
+		var _x;
+		var _y;
+		var _xsc = interaction.x_scale;
+		var _ysc = interaction.y_scale;
+		var _upper = 1;
+		if interaction.box_y + interaction.diff_y <= 566 {
+			_x = clamp(interaction.box_x - 64 * _xsc, 0, 1174 - 64 * _xsc);
+			_y = interaction.box_y + interaction.diff_y + 10;
+			_upper = 1;
+		} else {
+			_x = clamp(interaction.box_x - 64 * _xsc, 0, 1174 - 64 * _xsc);
+			_y = interaction.box_y - interaction.diff_y - 10 - 64 * _ysc;
+			_upper = -1;
+		}
+		
+		
+		draw_sprite_ext(spr_UIbox, 0, _x, _y, _xsc, _ysc, 0, c_white, 1);
+		draw_sprite_ext(spr_pointer, 0, clamp(interaction.box_x, _x + 12, _x + 64 * _xsc - 12), _y - 10 * _upper + (64*_ysc*(_upper == -1)), 1, _upper, 0, c_white, 1);
+		
+		// text and selectors plus scissors
+		
+		draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
+		
+
+	}
 }

@@ -19,6 +19,7 @@ def_zoom_scroller();
 def_spr_color_labels();
 def_palette_list();
 def_alt_list();
+def_dialogbox();
 
 
 

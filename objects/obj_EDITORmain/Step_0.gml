@@ -112,7 +112,7 @@ if focus == "nothing" {
 		layer_text_blend(layer_text_get_id("Assets_2", "TxtAttacks"), c_aqua);
 	}
 	
-	if mouse_in_uibox("Assets_2", "graphic_3582C489", cr_handpoint, false) {
+	if debug_mode and mouse_in_uibox("Assets_2", "graphic_3582C489", cr_handpoint, false) {
 		if mouse_check_button_pressed(mb_left) {room_goto(CharEdit_Colors)}
 		layer_text_blend(layer_text_get_id("Assets_2", "TxtColors"), make_color_hsv((global.tick * 2) mod 256, 255, 255));
 	}
