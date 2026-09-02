@@ -586,7 +586,7 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 	if draw_color_label_interactive(_nowX, 55 + _yoff, c_black, 0.5, 0.5, c_white, cr_handpoint, false) and can_interact {
 		_col = c_yellow;
 		if mouse_check_button_pressed(mb_left) {
-			show_dialogbox("addPalCol", _i, _nowX + 16, 55 + _yoff + 16, 6, 3, 16);
+			show_dialogbox("addPalCol", _i, _nowX + 16, 55 + _yoff + 16, 6, 1.5, 16);
 		}
 	}
 	draw_sprite_ext(spr_plus, 0, 16 + _nowX, 55 + 16 + _yoff, 0.38, 0.38, 0, _col, 1);
@@ -709,7 +709,10 @@ function def_dialogbox() {
 		// text and selectors plus scissors
 		
 		draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
-		
+		gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85, false);
+		for (var i = 0; i < array_length(sprite_colors); i++) {
+			// draw color labels but check if they arent used in other palettes first
+		}
 
 	}
 }
