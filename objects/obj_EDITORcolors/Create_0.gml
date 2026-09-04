@@ -21,6 +21,7 @@ selected_palette = 0;
 selected_alt = 0;
 selected = archive_fetch_file(AP.MAIN, get_full_path("portrait.png"));
 can_interact = true;
+click_buffer = false;
 interaction = {
 	type: "",
 	subtype: 0,
@@ -674,6 +675,7 @@ function def_alt_color_labels(_pal, _yoff, _isdef) {
 
 function show_dialogbox(_type, _subtype, _x, _y, _xscale, _yscale, _ydiff) {
 	can_interact = false;
+	click_buffer = true;
 	interaction.type = _type;
 	interaction.subtype = _subtype;
 	interaction.box_x = _x;
@@ -710,9 +712,32 @@ function def_dialogbox() {
 		
 		draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
 		gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85, false);
+		var c = 0;
 		for (var i = 0; i < array_length(sprite_colors); i++) {
-			// draw color labels but check if they arent used in other palettes first
+			var _found = false;
+			for (var j = 0; j < array_length(palettes); j++) {
+				if array_contains(palettes[j].colors, sprite_colors[i]) {
+					_found = true;
+					break;
+				}
+			}
+			if _found {continue}
+			c++; //NAME DROP WOOOO
+			
+			if draw_color_label_interactive(_x -22 + 32 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
+				// add color to palette array
+				can_interact = true;
+			}
+			
+			if !mouse_in_rectangle(_x, _y, _x + 64 * _xsc, _y + 64 * _ysc) and mouse_check_button(mb_any) and !click_buffer {
+				can_interact = true;
+			}
+				
 		}
+		gpu_set_scissor(0, 0, 9999, 9999);
 
+		if mouse_check_button_released(mb_any) {
+			click_buffer = false;
+		}
 	}
 }
