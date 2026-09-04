@@ -689,6 +689,7 @@ function def_dialogbox() {
 	if !can_interact {
 		//interaction.box_x = mouse_x_diff(true);
 		//interaction.box_y = mouse_y_diff(true);
+		var _subtype = interaction.subtype;
 		var _x;
 		var _y;
 		var _xsc = interaction.x_scale;
@@ -709,35 +710,36 @@ function def_dialogbox() {
 		draw_sprite_ext(spr_pointer, 0, clamp(interaction.box_x, _x + 12, _x + 64 * _xsc - 12), _y - 10 * _upper + (64*_ysc*(_upper == -1)), 1, _upper, 0, c_white, 1);
 		
 		// text and selectors plus scissors
-		
-		draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
-		gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85, false);
-		var c = 0;
-		for (var i = 0; i < array_length(sprite_colors); i++) {
-			var _found = false;
-			for (var j = 0; j < array_length(palettes); j++) {
-				if array_contains(palettes[j].colors, sprite_colors[i]) {
-					_found = true;
-					break;
+		if interaction.type == "addPalCol" {
+			draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
+			gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85, false);
+			var c = 0;
+			for (var i = 0; i < array_length(sprite_colors); i++) {
+				var _found = false;
+				for (var j = 0; j < array_length(palettes); j++) {
+					if array_contains(palettes[j].colors, sprite_colors[i]) {
+						_found = true;
+						break;
+					}
 				}
-			}
-			if _found {continue}
-			c++; //NAME DROP WOOOO
+				if _found {continue}
+				c++; //NAME DROP WOOOO
 			
-			if draw_color_label_interactive(_x -22 + 32 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
-				// add color to palette array
-				can_interact = true;
+				if draw_color_label_interactive(_x -22 + 32 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
+					array_push(palettes[_subtype].colors, sprite_colors[i]);
+					//write to file
+					can_interact = true;
+				}	
 			}
-			
+			gpu_set_scissor(0, 0, 9999, 9999);
+
 			if !mouse_in_rectangle(_x, _y, _x + 64 * _xsc, _y + 64 * _ysc) and mouse_check_button(mb_any) and !click_buffer {
 				can_interact = true;
 			}
-				
-		}
-		gpu_set_scissor(0, 0, 9999, 9999);
 
-		if mouse_check_button_released(mb_any) {
-			click_buffer = false;
+			if mouse_check_button_released(mb_any) {
+				click_buffer = false;
+			}
 		}
 	}
 }
