@@ -534,7 +534,7 @@ function def_palette_list() {
 			draw_color_label(15, 9 + _nowY, _pal.colors[_pal.main_id], 1.21, 1.21, c_yellow);
 		}
 		draw_text_ext_transformed(104, 9 + _nowY, _pal.name, 999, 9999, 0.24, 0.24, 0);
-		draw_text_transformed_colour(103, 28 + _nowY, "[Left Click] Edit Color\n[Right Click] Set Main Color", 0.16, 0.16, 0, c_gray, c_gray, c_gray, c_gray, 1);
+		draw_text_transformed_colour(103, 28 + _nowY, "[Right Click] Remove Color\n[Left Click] Set Main Color", 0.16, 0.16, 0, c_gray, c_gray, c_gray, c_gray, 1);
 		def_pal_color_labels(_pal, _nowY, i);
 		
 		if mouse_in_rectangle(7, _nowY, 7 + (64 * 5), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) and can_interact {
@@ -573,11 +573,26 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 		var _nowX = 102 + i * 35 + scrollers.pcol[_i];
 		var _col = multiplexer(_pal.main_id == i, c_white, c_yellow);
 		if draw_color_label_interactive(_nowX, 55 + _yoff, _pal.colors[i], 0.5, 0.5, _col, cr_handpoint, false) and can_interact {
-			if mouse_check_button_pressed(mb_left) {
-				//edit color
-			} elif mouse_check_button_pressed(mb_right) {
+			if mouse_check_button_pressed(mb_right) {
+				array_delete(_pal.colors, i, 1);
+				if _pal.main_id == i {
+					_pal.main_id = -1;
+				} else {
+					var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
+					var _newDel = calculate_new_delta(_i);
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+				}
+				
+			} else if mouse_check_button_pressed(mb_left) {
 				_pal.main_id = i;
-				// edit the file with the new main
+				var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _i), false);
+				archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+				
+				_line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
+				var _newDel = calculate_new_delta(_i);
+				archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+				
+				_pal.max_diff_hsv = _newDel;
 			}
 		}
 	}
@@ -727,7 +742,13 @@ function def_dialogbox() {
 			
 				if draw_color_label_interactive(_x -22 + 32 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
 					array_push(palettes[_subtype].colors, sprite_colors[i]);
-					//write to file
+					
+					var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _subtype), false);
+					var _newDel = calculate_new_delta(_subtype);
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _subtype, _newDel[0], _newDel[1], _newDel[2]));
+				
+					palettes[_subtype].max_diff_hsv = _newDel;
+					
 					can_interact = true;
 				}	
 			}
