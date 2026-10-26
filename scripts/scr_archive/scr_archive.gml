@@ -1,4 +1,4 @@
-// AI Slop? Nah mate, this is man made slop
+      // AI Slop? Nah mate, this is man made slop
 // Jokes aside i'm pretty proud of this
 enum FT {
 	SPRITE,

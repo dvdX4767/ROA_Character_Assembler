@@ -893,6 +893,17 @@ function mouse_in_rectangle(_x1, _y1, _x2, _y2, _debug = false) {
 	return point_in_rectangle(mouse_x, mouse_y, _x1, _y1, _x2, _y2);
 }
 
+/// @desc					Checks if the mouse cursor is inside a rectangle determined by the top left corner pos (x1, y1) and the bottom right corner (x2, y2)
+/// @param {Real} x1		The x coord of the top left corner
+/// @param {Real} y1		The y coord of the top left corner
+/// @param {Real} width		The width of the rectangle to check
+/// @param {Real} height	The height of the rectangle to check
+/// @param {Bool} debug		Wether or not to draw a red rectangle around the check area, works only inside draw events
+function mouse_in_rectangle_alt(_x1, _y1, _w, _h, _debug = false) {
+	if _debug {draw_rectangle_colour(_x1, _y1, _x1 + _w, _y1 + _h, c_red, c_red, c_red, c_red, true)}
+	return point_in_rectangle(mouse_x, mouse_y, _x1, _y1, _x1 + _w, _y1 + _h);
+}
+
 /// @desc					Wrapper function for show_debug_message()
 /// @param {Any} output		The value to pass
 function print(_msg) {

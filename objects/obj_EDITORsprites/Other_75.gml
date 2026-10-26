@@ -1,4 +1,4 @@
-switch (async_load[?"event_type"]) {
+                                                                             switch (async_load[?"event_type"]) {
 	case "file_drag_enter_start":
 		filedrag = true;
 		break;

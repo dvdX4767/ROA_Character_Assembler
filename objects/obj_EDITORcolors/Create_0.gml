@@ -22,6 +22,7 @@ selected_alt = 0;
 selected = archive_fetch_file(AP.MAIN, get_full_path("portrait.png"));
 can_interact = true;
 click_buffer = false;
+copied_color = c_white;
 interaction = {
 	type: "",
 	subtype: 0,
@@ -377,7 +378,6 @@ function check_color_in_range(_colH, _colS, _colV, _main_hue, _main_sat, _main_v
 	       (abs(_colV - _main_val) <= _val_range);
 }
 
-/// @desc Creates an empty color palette
 function palette_create(_name) {
 	return {
 		name: _name,
@@ -387,7 +387,6 @@ function palette_create(_name) {
 	}
 }
 
-/// @desc Creates an empty alt palette
 function alt_create(_name) {
 	return {
 		name: _name,
@@ -557,6 +556,7 @@ function def_palette_list() {
 				palettes[array_length(palettes) - 1].main_id = -1;
 				array_push(scrollers.pcol, 0);
 				for (var j = 1; j < array_length(alts); j++) {
+					array_push(alts[j].colors, make_colour_rgb(255, 0, 255));
 					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0}, {1}, 255, 0, 255)", j, array_length(palettes) - 1));
 				}
 			}
@@ -576,22 +576,67 @@ function def_pal_color_labels(_pal, _yoff, _i) {
 			if mouse_check_button_pressed(mb_right) {
 				array_delete(_pal.colors, i, 1);
 				if _pal.main_id == i {
-					_pal.main_id = -1;
+					_pal.main_id = 0;
+					if array_length(_pal.colors) == 0 {
+						_pal.main_id = -1;
+						var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _i), false);
+						if _line != -1 {
+							archive_edit_gml_remove(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line);
+						}
+						_line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
+						if _line != -1 {
+							archive_edit_gml_remove(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line);
+						}
+					} else {
+						var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _i), false);
+						if _line != -1 {
+							archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+						} else {
+							archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+						}
+						_line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
+						var _newDel = calculate_new_delta(_i);
+						if _line != -1 {
+							archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+						} else {
+							archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+						}
+					}
 				} else {
+					if _pal.main_id > i {
+						_pal.main_id--;
+						var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _i), false);
+						if _line != -1 {
+							archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+						} else {
+							archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+						}
+					}
 					var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
 					var _newDel = calculate_new_delta(_i);
-					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+					if _line != -1 {
+						archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+					} else {
+						archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+					}
 				}
 				
 			} else if mouse_check_button_pressed(mb_left) {
 				_pal.main_id = i;
 				var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _i), false);
-				archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
-				
+				if _line != -1 {
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+				} else {
+					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0},{1},{2},{3});", _i, color_get_red(_pal.colors[i]), color_get_green(_pal.colors[i]), color_get_blue(_pal.colors[i])));
+				}
 				_line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _i), false);
 				var _newDel = calculate_new_delta(_i);
-				archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
-				
+				if _line != -1 {
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+				} else {
+					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},{1},{2},{3});", _i, _newDel[0], _newDel[1], _newDel[2]));
+				}
+
 				_pal.max_diff_hsv = _newDel;
 			}
 		}
@@ -614,7 +659,7 @@ function def_alt_list() {
 	
 	draw_sprite_ext(spr_UIbox, 0, 342, 99 + scrollers.alts, 5.9, 1.46, 0, multiplexer(selected_alt == 0, c_white, c_orange), 1);
 	draw_text_ext_transformed(348, 1 + 99 + scrollers.alts, "DEFAULT", 999, 9999, 0.24, 0.24, 0);
-	def_alt_color_labels(undefined, 99 + scrollers.alts, true);
+	def_alt_color_labels(undefined, 99 + scrollers.alts, true, -1);
 	if mouse_in_rectangle(342, 99 + scrollers.alts, 342 + (64 * 5.9), 99 + scrollers.alts + (64 * 1.46)) and mouse_check_button_pressed(mb_left) {
 		selected_alt = 0;
 		needs_update = true;
@@ -628,7 +673,7 @@ function def_alt_list() {
 			draw_sprite_ext(spr_UIbox, 0, 342, _nowY, 5.9, 1.46, 0, multiplexer(selected_alt == i, c_white, c_orange), 1);
 			draw_text_ext_transformed(348, 1 + _nowY, _pal.name, 999, 9999, 0.24, 0.24, 0);
 			draw_text_transformed_colour(350, 28 + _nowY, "[Left Click] Edit Color", 0.16, 0.16, 0, c_gray, c_gray, c_gray, c_gray, 1);
-			def_alt_color_labels(_pal, _nowY, false);
+			def_alt_color_labels(_pal, _nowY, false, i);
 		}
 		
 		if mouse_in_rectangle(342, _nowY, 342 + (64 * 5.9), _nowY + (64 * 1.46)) and mouse_check_button_pressed(mb_left) and can_interact {
@@ -651,6 +696,13 @@ function def_alt_list() {
 		set_cursor(cr_handpoint);
 		if mouse_check_button_pressed(mb_left) {
 			array_push(alts, alt_create(string("UNNAMED {0}", array_length(alts))));
+			for (var c = 0; c < array_length(palettes); c++) {
+				if palettes[c].main_id < 0 {
+					array_push(alts[array_length(alts) - 1].colors, c_fuchsia);
+				} else {
+					array_push(alts[array_length(alts) - 1].colors, palettes[c].colors[palettes[c].main_id]);
+				}
+			}
 			for (var j = 1; j < array_length(alts); j++) {
 				archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0}, {1}, 255, 0, 255)", j, array_length(alts) - 1));
 			}
@@ -666,14 +718,14 @@ function def_alt_list() {
 	gpu_set_scissor_alt(0, 0, 9999, 9999);
 }
 
-function def_alt_color_labels(_pal, _yoff, _isdef) {
+function def_alt_color_labels(_pal, _yoff, _isdef, _i) {
 	gpu_set_scissor_alt(347, clamp(43 + _yoff, 97, 755), 714, clamp(86 + _yoff, 97, 755));
 	if !_isdef {
 		for (var i = 0; i < array_length(_pal.colors); i++) {
 			var _nowX = 350 + i * 45;
 			if draw_color_label_interactive(_nowX, 45 + _yoff, _pal.colors[i], 0.63, 0.63, c_yellow, cr_handpoint, false) and can_interact {
 				if mouse_check_button_pressed(mb_left) {
-					// edit
+					show_dialogbox("chooseCol", [_pal.colors[i], true, true, _pal.colors, i, _i], _nowX + 32, _yoff + 85 , 5.03, 3.21, 0);
 				}
 			}
 		}
@@ -727,7 +779,7 @@ function def_dialogbox() {
 		// text and selectors plus scissors
 		if interaction.type == "addPalCol" {
 			draw_text_ext_transformed(_x + 6, _y + 4, "Select a color", 999, 9999, 0.3, 0.3, 0);
-			gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85, false);
+			gpu_set_scissor_alt(_x + 8, _y + 30, _x + 375, _y + 85);
 			var c = 0;
 			for (var i = 0; i < array_length(sprite_colors); i++) {
 				var _found = false;
@@ -740,13 +792,27 @@ function def_dialogbox() {
 				if _found {continue}
 				c++; //NAME DROP WOOOO
 			
-				if draw_color_label_interactive(_x -22 + 32 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
+				if draw_color_label_interactive(_x + - 43 + 54 * c, _y + 35, sprite_colors[i], 0.75, 0.75, c_white, cr_handpoint, true) {
 					array_push(palettes[_subtype].colors, sprite_colors[i]);
-					
+				
+					if palettes[_subtype].main_id < 0 {
+						palettes[_subtype].main_id = 0;
+						var _c = palettes[_subtype].colors[0];
+						var _line2 = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0}", _subtype), false);
+						if _line2 != -1 {
+							archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line2, string("set_color_profile_slot(0,{0},{1},{2},{3});", _subtype, color_get_red(_c), color_get_green(_c), color_get_blue(_c)));
+						} else {
+							archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot(0,{0},{1},{2},{3});", _subtype, color_get_red(_c), color_get_green(_c), color_get_blue(_c)));
+						}
+					}
 					var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0}", _subtype), false);
 					var _newDel = calculate_new_delta(_subtype);
-					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _subtype, _newDel[0], _newDel[1], _newDel[2]));
-				
+					if _line != -1 {
+						archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot_range({0},{1},{2},{3});", _subtype, _newDel[0], _newDel[1], _newDel[2]));
+					} else {
+						archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot_range({0},{1},{2},{3});", _subtype, _newDel[0], _newDel[1], _newDel[2]));
+					}
+					
 					palettes[_subtype].max_diff_hsv = _newDel;
 					
 					can_interact = true;
@@ -760,6 +826,136 @@ function def_dialogbox() {
 
 			if mouse_check_button_released(mb_any) {
 				click_buffer = false;
+			}
+		}
+		
+		if interaction.type == "chooseCol" {
+			if (mouse_check_button_pressed(mb_any) or mouse_wheel_down() or mouse_wheel_up()) {
+				if _subtype[2] {
+					interaction.subtype[2] = false;
+				} else if !mouse_in_rectangle_alt(_x, _y, 64 * _xsc, 64 * _ysc, false) {
+					can_interact = true;
+					return;
+				}
+			}
+			
+			set_cursor(cr_default);
+			var _rgb = _subtype[1]; 
+			var _r = color_get_red(_subtype[0]);
+			var _g = color_get_green(_subtype[0]);
+			var _b = color_get_blue(_subtype[0]);
+			var _h = color_get_hue(_subtype[0]);
+			var _s = color_get_saturation(_subtype[0]);
+			var _v = color_get_value(_subtype[0]);
+			var _rc = multiplexer(_rgb, make_colour_hsv(_h, 255, 255), make_colour_rgb(255, 255 - _r, 255 - _r));
+			var _gc = multiplexer(_rgb, make_colour_hsv(_h, _s, 255), make_colour_rgb(255 - _g, 255, 255 - _g));
+			var _bc = multiplexer(_rgb, make_colour_hsv(_h, 255, max(_v, 100)), make_colour_rgb(255 - _b, 255 - _b, 255));
+
+			draw_text_ext_transformed_colour(_x + 8, _y + 1, multiplexer(_rgb, "H", "R"), 1, 100, 0.39, 0.39, 1, _rc, _rc, _rc, _rc, 1);
+			draw_text_ext_transformed_colour(_x + 8, _y + 34, multiplexer(_rgb, "S", "G"), 1, 100, 0.39, 0.39, 1, _gc, _gc, _gc, _gc, 1);
+			draw_text_ext_transformed_colour(_x + 8, _y + 67, multiplexer(_rgb, "V", "B"), 1, 100, 0.39, 0.39, 1, _bc, _bc, _bc, _bc, 1);
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 30, _y + 13, 3.38, 0.125, 0, _rc, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 30, _y + 13 + 33, 3.38, 0.125, 0, _gc, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 30, _y + 13 + 66, 3.38, 0.125, 0, _bc, 1);
+			
+			if mouse_in_rectangle(_x + 24, _y + 6, _x + 250, _y + 28) {
+				set_cursor(cr_size_we);
+				if mouse_check_button(mb_left) {
+					var _ics = clamp(mouse_x - _x - 42, 0, 190) / 190;
+					interaction.subtype[0] = multiplexer(_rgb, make_colour_hsv(_ics * 255, _s, _v), make_colour_rgb(_ics * 255, _g, _b));
+					needs_update = true;
+				}
+			}
+			if mouse_in_rectangle(_x + 24, _y + 6 + 33, _x + 250, _y + 28 + 33) {
+				set_cursor(cr_size_we);
+				if mouse_check_button(mb_left) {
+					var _ics = clamp(mouse_x - _x - 42, 0, 190) / 190;
+					interaction.subtype[0] = multiplexer(_rgb, make_colour_hsv(_h, 255 * _ics, _v), make_colour_rgb(_r, 255 * _ics, _b));
+					needs_update = true;
+				}
+			}
+			if mouse_in_rectangle(_x + 24, _y + 6 + 66, _x + 250, _y + 28 + 66) {
+				set_cursor(cr_size_we);
+				if mouse_check_button(mb_left) {
+					var _ics = clamp(mouse_x - _x - 42, 0, 190) / 190;
+					interaction.subtype[0] = multiplexer(_rgb, make_colour_hsv(_h, _s, 255 * _ics), make_colour_rgb(_r, _g, 255 *  _ics));
+					needs_update = true;
+				}
+			}
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 257, _y + 5, 0.8, 0.39, 0, _rc, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 257, _y + 5 + 33, 0.8, 0.39, 0, _gc, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 257, _y + 5 + 66, 0.8, 0.39, 0, _bc, 1);
+			
+			draw_set_font(fnt_maplemono_SDF);
+			draw_set_halign(fa_center);
+			
+			draw_text_ext_transformed_colour(_x + 283, _y + 6, round(multiplexer(_rgb, _h, _r)), 10, 1000, 1.1, 1.1, 0, c_ltgray, c_ltgray, c_ltgray, c_ltgray, 1);
+			draw_text_ext_transformed_colour(_x + 283, _y + 6 + 33, round(multiplexer(_rgb, _s, _g)), 10, 1000, 1.1, 1.1, 0, c_ltgray, c_ltgray, c_ltgray, c_ltgray, 1);
+			draw_text_ext_transformed_colour(_x + 283, _y + 6 + 66, round(multiplexer(_rgb, _v, _b)), 10, 1000, 1.1, 1.1, 0, c_ltgray, c_ltgray, c_ltgray, c_ltgray, 1);
+		 
+			draw_set_font(fnt_jersey20_SDF);
+			draw_set_halign(fa_left);
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 30 + 189 * (multiplexer(_rgb, _h, _r) / 255), _y + 8, 0.43, 0.28, 0, c_white, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 30 + 189 * (multiplexer(_rgb, _s, _g) / 255), _y + 8 + 33, 0.43, 0.28, 0, c_white, 1);
+			draw_sprite_ext(spr_UIbox, 0, _x + 30 + 189 * (multiplexer(_rgb, _v, _b) / 255), _y + 8 + 66, 0.43, 0.28, 0, c_white, 1);
+		
+			draw_color_label(_x + 8, _y + 106, _subtype[0], 1.4, 1.4, c_white);
+			
+			var _c = c_white;
+			if mouse_in_rectangle_alt(_x + 105, _y + 106, 64 * 1.48, 64 * 0.55) {
+				set_cursor(cr_handpoint);
+				_c = c_yellow;
+				if mouse_check_button_pressed(mb_left) {
+					copied_color = _subtype[0];
+				}
+			}
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 105, _y + 106, 1.48, 0.55, 0, c_white, 1);
+			draw_text_ext_transformed_color(_x + 127, _y + 110, "COPY", 10, 1000, 0.31, 0.31, 0, _c, _c, _c, _c, 1);
+			
+			_c = c_white;
+			if mouse_in_rectangle_alt(_x + 105, _y + 147, 64 * 1.48, 64 * 0.55) {
+				set_cursor(cr_handpoint);
+				_c = c_yellow;
+				if mouse_check_button_pressed(mb_left) {
+					interaction.subtype[0] = copied_color;
+					needs_update = true;
+				}
+			}
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 105, _y + 147, 1.48, 0.55, 0, c_white, 1);
+			draw_sprite_ext(spr_UIbox_clear, 0, _x + 107, _y + 149, 1.42, 0.49, 0, copied_color, 1);
+			draw_text_ext_transformed_color(_x + 122, _y + 151, "PASTE", 10, 1000, 0.31, 0.31, 0, _c, _c, _c, _c, 1);
+			
+			draw_set_halign(fa_center);
+			draw_sprite_ext(spr_UIbox, 0, _x + 213, _y + 106, 1.48, 0.55, 0, c_white, 1);
+			draw_text_ext_transformed(_x + 259, _y + 112, color_to_hex(_subtype[0]), 10, 1000, 0.28, 0.28, 0);
+			draw_set_halign(fa_left);
+			
+			_c = c_white;
+			if mouse_in_rectangle_alt( _x + 250, _y + 147, 0.89 * 64, 0.55 * 64) {
+				set_cursor(cr_handpoint);
+				_c = c_yellow;
+				if mouse_check_button_pressed(mb_left) {
+					interaction.subtype[1] = !interaction.subtype[1];
+				}
+			}
+			
+			draw_sprite_ext(spr_UIbox, 0, _x + 250, _y + 147, 0.89, 0.55, 0, c_white, 1);
+			draw_text_ext_transformed_color(_x + 261, _y + 151, multiplexer(_rgb, "HSV", "RGB"), 10, 1000, 0.31, 0.31, 0, _c, _c, _c, _c, 1);
+			
+			interaction.subtype[3][interaction.subtype[4]] = interaction.subtype[0];
+			if needs_update {
+				var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0},{1}", _subtype[5], _subtype[4]), false);
+				var _c = interaction.subtype[0];
+				if _line != -1 {
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_c), color_g(_c), color_b(_c)));
+				} else {
+					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_c), color_g(_c), color_b(_c)));
+				}
 			}
 		}
 	}
