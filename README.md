@@ -20,7 +20,8 @@ If you find any bugs, please report them here on GitHub in the Issues section.
 * **Sound Manager:** Replace, add, and link sounds to different general events (Ex: Victory theme, Jump sound, etc...).
 * **Attack Editor:** Add or modify the stats of attacks, it includes an attack window editor and a visual hitbox editor to match it with the sprite easily.
 * **AI Editor:** Link different moves to basic AI states (target far above, below, in front, etc.).
-* **Color Palette Editor:** Links to a useful site that handles RoA colors (credit to the creators of said website).
+* **Color Palette Editor:** Is being currently reworked!
+* **Script Editor:** Edit the .gml scripts for more complex behaviours (Editor created by Dakurai)
 
 *Note: The program MAY crash if you refresh the Sound Manager too many times or if you select characters over and over, you have been warned.*
 
