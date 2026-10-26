@@ -83,6 +83,8 @@ if focus == "nothing" {
 							} else {
 								show_message("Failed to replace sprite, invalid strip number");
 							}
+						} else if array_contains(forbidden, filename_name(_path)) {
+							archive_edit_sprite(AP.MAIN, _path, _newFile, _path);
 						} else {
 							archive_edit_sprite(AP.SPRITES, _path, _newFile, _path);
 						}
@@ -114,7 +116,11 @@ if focus == "nothing" {
 						}
 					
 						if _type == 0 {
-							archive_edit_sprite(AP.SPRITES, _path, undefined, _path);
+							if array_contains(forbidden, string("{0}.png", _name)) {
+								archive_edit_sprite(AP.MAIN, _path, "empty.png", _path);
+							} else {
+								archive_edit_sprite(AP.SPRITES, _path, undefined, _path);
+							}
 						} else {
 							archive_delete(AP.SPRITES, _path);
 						}
