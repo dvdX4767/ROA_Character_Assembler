@@ -446,7 +446,10 @@ function ARCHIVE_SAVE() {
 	
 	for (var i = 0; i < array_length(_EVERYpath); i++) {
 		if !array_contains(_EVERYexisting, _EVERYpath[i]) and file_exists(_EVERYpath[i]) {
-			file_delete(_EVERYpath[i]);
+			var _p = string("{0}/{1}", global.selected_path, filename_name(_EVERYpath[i]));
+			if _p != _EVERYpath[i] {
+				file_delete(_EVERYpath[i]);
+			}
 		}
 	}
 	

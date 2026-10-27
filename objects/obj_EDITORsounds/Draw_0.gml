@@ -23,10 +23,32 @@ if mouse_in_rectangle(12, 74 + (19 + 102) * k + global.scroll_y, 64 * 5.8, (64 *
 	}
 }
 
+k++;
+_col = multiplexer(selected == "CHARSELECT.OGG", c_fuchsia, c_aqua);
+draw_sprite_ext(spr_UIbox, 0, 12, 74 + (19 + 102) * k + global.scroll_y, 5.64, 1.6, 0, _col, 1);
+draw_sprite_ext(spr_sounds, 0, 21, 85 + (19 + 102) * k + global.scroll_y, 5, 5, 0, c_white, 1);
+draw_text_ext_transformed_colour(111, 90 + (19 + 102) * k + global.scroll_y, "charselect", 60, 607, 0.4, 0.4, 0, _col, _col, _col, _col, 1);
+draw_text_ext_transformed_colour(112, 129 + (19 + 102) * k + global.scroll_y, "SPECIAL SOUND", 60, 607, 0.4, 0.4, 0, c_fuchsia, c_fuchsia, c_fuchsia, c_fuchsia, 1);
+if mouse_in_rectangle(12, 74 + (19 + 102) * k + global.scroll_y, 64 * 5.8, (64 * 1.6 * 1.7) + ((19 + 102) * k) + global.scroll_y) and focus == 0 {
+	set_cursor(cr_handpoint);
+	if mouse_check_button_pressed(mb_left) {
+		selected = "CHARSELECT.OGG";
+		if audio_exists(loaded_sound) {
+			audio_destroy_stream(loaded_sound);
+		}
+		soundbar_percent = 0
+		playing_instance = -1;
+		use_array = lookfor_uses_custom();
+		if !file_exists(get_full_path("charselect.ogg")) {file_copy("empty.ogg", get_full_path("charselect.ogg"))}
+		loaded_sound = audio_create_stream(get_full_path("charselect.ogg"));
+	}
+}
+
+
 var j;
 
 for (j = 0; j < array_length(all_sounds_custom); j++) {
-	k = j + 1;
+	k = j + 2;
 	_col = multiplexer(selected == all_sounds_custom[j], c_lime, c_aqua);
 	draw_sprite_ext(spr_UIbox, 0, 12, 74 + (19 + 102) * k + global.scroll_y, 5.64, 1.6, 0, _col, 1);
 	draw_sprite_ext(spr_sounds, 0, 21, 85 + (19 + 102) * k + global.scroll_y, 5, 5, 0, c_white, 1);
@@ -48,7 +70,7 @@ for (j = 0; j < array_length(all_sounds_custom); j++) {
 }
 
 for (var i = 0; i < array_length(all_sounds_builtin); i++) {
-	k = i + j + 1;
+	k = i + j + 2;
 	_col = multiplexer(selected == all_sounds_builtin[i], c_orange, c_aqua);
 	draw_sprite_ext(spr_UIbox, 0, 12, 74 + (19 + 102) * k + global.scroll_y, 5.64, 1.6, 0, _col, 1);
 	draw_sprite_ext(spr_sounds, 0, 21, 85 + (19 + 102) * k + global.scroll_y, 5, 5, 0, c_white, 1);
@@ -134,6 +156,9 @@ if array_contains(all_sounds_builtin, selected) {
 			set_cursor(cr_handpoint);
 			if mouse_check_button_pressed(mb_left) {
 				var _path = string("{0}/sounds/{1}.ogg", global.selected_path, selected);
+				if selected == "CHARSELECT.OGG" {
+					_path = get_full_path("charselect.ogg");
+				}
 				if import_custom_sound_name(_path) {
 					if audio_exists(loaded_sound) {
 						audio_destroy_stream(loaded_sound);
@@ -149,20 +174,30 @@ if array_contains(all_sounds_builtin, selected) {
 			set_cursor(cr_handpoint);
 			if mouse_check_button_pressed(mb_left) {
 				var _path = string("{0}/sounds/{1}.ogg", global.selected_path, selected);
-				if show_question("Are you sure you want to delete this sound?") {
-					file_delete(_path);
-					file_replace_line_starting_with(string("{0}/scripts/init.gml", global.selected_path), "set_victory_theme(", "");
-					if audio_exists(loaded_sound) {
-						audio_destroy_stream(loaded_sound);
+				if selected == "CHARSELECT.OGG" {
+					if show_question("Are you sure you want to reset this sound?") {
+						file_copy("empty.ogg", get_full_path("charselect.ogg"))
+						if audio_exists(loaded_sound) {
+							audio_destroy_stream(loaded_sound);
+						}
+						room_restart();
 					}
-					room_restart();
+				} else {
+					if show_question("Are you sure you want to delete this sound?") {
+						file_delete(_path);
+						file_replace_line_starting_with(string("{0}/scripts/init.gml", global.selected_path), "set_victory_theme(", "");
+						if audio_exists(loaded_sound) {
+							audio_destroy_stream(loaded_sound);
+						}
+						room_restart();
+					}
 				}
 			}
 		}
 	}
 }
 
-if array_contains(all_sounds_custom, selected) {
+if array_contains(all_sounds_custom, selected) and selected != "CHARSELECT.OGG" {
 	if mouse_in_rectangle(390, 70, 1220, 130) and focus == 0 {
 		set_cursor(cr_beam);
 		if mouse_check_button_pressed(mb_left) {
@@ -197,25 +232,29 @@ if keyboard_check_pressed(vk_down) {
 	scroll = min(scroll + 1, max(array_length(use_array) - 1, 0));
 }
 
-for (var ii = scroll; ii < clamp(array_length(use_array), 0, min(array_length(use_array), 14)); ii++) {
-	draw_text_ext_transformed(395, 305 + 30 * (ii - scroll), string("{0} ({1})", use_array[ii][0], use_array[ii][1]), 999, 99999, 0.4, 0.4, 0);
-	draw_sprite_ext(spr_UIbox, 0, 1264, 310 + 30 * (ii - scroll), 1.4, 0.45, 0, c_white, 1);
-	draw_text_ext_transformed(1283, 316 + 30 * (ii - scroll), "INSPECT", 999, 99999, 0.2, 0.2, 0);
-	if mouse_in_rectangle(1264, 310 + 30 * (ii - scroll), 1264 + 64 * 1.4, 310 + 64 * 0.45 + 30 * ii) and focus == 0 {
-		set_cursor(cr_handpoint);
-		if mouse_check_button_pressed(mb_left) {
-			url_open(string("{0}/scripts/{1}", global.selected_path, use_array[ii][0]));
+if selected != "CHARSELECT.OGG" {
+	for (var ii = scroll; ii < clamp(array_length(use_array), 0, min(array_length(use_array), 14)); ii++) {
+		draw_text_ext_transformed(395, 305 + 30 * (ii - scroll), string("{0} ({1})", use_array[ii][0], use_array[ii][1]), 999, 99999, 0.4, 0.4, 0);
+		draw_sprite_ext(spr_UIbox, 0, 1264, 310 + 30 * (ii - scroll), 1.4, 0.45, 0, c_white, 1);
+		draw_text_ext_transformed(1283, 316 + 30 * (ii - scroll), "INSPECT", 999, 99999, 0.2, 0.2, 0);
+		if mouse_in_rectangle(1264, 310 + 30 * (ii - scroll), 1264 + 64 * 1.4, 310 + 64 * 0.45 + 30 * ii) and focus == 0 {
+			set_cursor(cr_handpoint);
+			if mouse_check_button_pressed(mb_left) {
+				url_open(string("{0}/scripts/{1}", global.selected_path, use_array[ii][0]));
+			}
 		}
 	}
-}
 
-draw_text_ext_transformed_color(395, 305 + 30 * (array_length(use_array) - scroll), "CLICK HERE TO ADD BASIC SOUND USES", 999, 99999, 0.4, 0.4, 0, c_lime, c_lime, c_lime, c_lime, 1);
-if mouse_in_rectangle(395, 310 + 30 * (array_length(use_array) - scroll), 1264 + 64 * 1.4, 304 + 64 * 0.45 + 30 * array_length(use_array)) {
-	set_cursor(cr_handpoint);
-	if mouse_check_button_pressed(mb_left) and focus == 0 {
-		focus = 2;
-		GET_ME_WHAT_I_NEED();
+	draw_text_ext_transformed_color(395, 305 + 30 * (array_length(use_array) - scroll), "CLICK HERE TO ADD BASIC SOUND USES", 999, 99999, 0.4, 0.4, 0, c_lime, c_lime, c_lime, c_lime, 1);
+	if mouse_in_rectangle(395, 310 + 30 * (array_length(use_array) - scroll), 1264 + 64 * 1.4, 304 + 64 * 0.45 + 30 * array_length(use_array)) {
+		set_cursor(cr_handpoint);
+		if mouse_check_button_pressed(mb_left) and focus == 0 {
+			focus = 2;
+			GET_ME_WHAT_I_NEED();
+		}
 	}
+} else {
+	draw_text_ext_transformed_color(395, 305, "Character select sound", 999, 99999, 0.4, 0.4, 0, c_lime, c_lime, c_lime, c_lime, 1);
 }
 
 if focus == 2 {
