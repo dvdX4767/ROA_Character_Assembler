@@ -740,6 +740,8 @@ function def_alt_color_labels(_pal, _yoff, _isdef, _i) {
 	gpu_set_scissor_alt(339, 97, 723, 755);
 }
 
+
+
 function show_dialogbox(_type, _subtype, _x, _y, _xscale, _yscale, _ydiff) {
 	can_interact = false;
 	click_buffer = true;

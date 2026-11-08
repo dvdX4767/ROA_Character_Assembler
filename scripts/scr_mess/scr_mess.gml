@@ -842,11 +842,6 @@ function clear_gml_comments_except_lonely_ones(_arr) {
 	return _array;
 }
 
-/// @desc same as gpu_set_scissor but takes two coords. I HATE HATE HATE HATE functions that take width and height and not second position!!!!!!!!!!
-function gpu_set_scissor_alt(_x, _y, _x2, _y2) {
-	gpu_set_scissor(_x, _y, _x2 - _x, _y2 - _y);
-}
-
 function colorswap_shader(_original_cols, _new_cols) {
 	var _len = array_length(_original_cols);
 	

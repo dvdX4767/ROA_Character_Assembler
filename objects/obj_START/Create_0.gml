@@ -77,7 +77,13 @@ for (var i = 0; i < array_length(global.saved_paths); i++) {
 	}
 }
 
-load_dialect();
+try {
+	load_dialect();
+} catch (_err) {
+	show_debug_message(_err.message);
+	show_message("Read file limit has been reached, due to this you have to restart the program.\nThis is NOT a bug i can fix. \nGame maker crashes if too many files are read (this mainly happens if you delete characters)\n\nI apologize for the inconvenience :(");
+	game_end();
+}
 
 function load_templates() {
 	if !variable_global_exists("selected_template") {global.selected_template = 0;}

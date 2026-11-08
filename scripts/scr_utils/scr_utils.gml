@@ -964,3 +964,12 @@ function color_g(_col) {
 function color_b(_col) {
 	return color_get_blue(_col)
 }
+
+/// @desc Alternative version of gpu_set_scissor() that takes a second coordinate instead of width and height
+/// @param {Real} x1		The x coord of the top left corner
+/// @param {Real} y1		The y coord of the top left corner
+/// @param {Real} x2		The x coord of the bottom right corner
+/// @param {Real} y2		The y coord of the bottom right corner
+function gpu_set_scissor_alt(_x, _y, _x2, _y2) {
+	gpu_set_scissor(_x, _y, max(0, _x2 - _x), max(0, _y2 - _y));
+}
