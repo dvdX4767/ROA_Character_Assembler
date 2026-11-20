@@ -952,11 +952,11 @@ function def_dialogbox() {
 			interaction.subtype[3][interaction.subtype[4]] = interaction.subtype[0];
 			if needs_update {
 				var _line = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0},{1}", _subtype[5], _subtype[4]), false);
-				var _c = interaction.subtype[0];
+				var _cl = interaction.subtype[0];
 				if _line != -1 {
-					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_c), color_g(_c), color_b(_c)));
+					archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/colors.gml"), _line, string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_cl), color_g(_cl), color_b(_cl)));
 				} else {
-					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_c), color_g(_c), color_b(_c)));
+					archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/colors.gml"), string("set_color_profile_slot({0},{1},{2},{3},{4});", _subtype[5], _subtype[4], color_r(_cl), color_g(_cl), color_b(_cl)));
 				}
 			}
 		}

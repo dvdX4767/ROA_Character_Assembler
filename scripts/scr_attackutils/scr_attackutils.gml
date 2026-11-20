@@ -359,6 +359,7 @@ function get_quoted_text(_str) {
 function button_boolean(_asslayer, _assname, _asstext, _assstruct, _asskey) {
 	if mouse_in_uibox(_asslayer, _assname, cr_handpoint, true) {
 		_assstruct[$ _asskey] = !_assstruct[$ _asskey];
+		global.stats_modified = true;
 	}
 	layer_text_blend(get_ui_id(_asslayer, _asstext, false), multiplexer(_assstruct[$ _asskey], c_red, c_lime));
 	layer_text_text(get_ui_id(_asslayer, _asstext, false), multiplexer(_assstruct[$ _asskey], "FALSE", "TRUE"));
@@ -367,6 +368,7 @@ function button_boolean(_asslayer, _assname, _asstext, _assstruct, _asskey) {
 function button_boolean_reverse(_asslayer, _assname, _asstext, _assstruct, _asskey) {
 	if mouse_in_uibox(_asslayer, _assname, cr_handpoint, true) {
 		_assstruct[$ _asskey] = !_assstruct[$ _asskey];
+		global.stats_modified = true;
 	}
 	layer_text_blend(get_ui_id(_asslayer, _asstext, false), multiplexer(_assstruct[$ _asskey], c_lime, c_red));
 	layer_text_text(get_ui_id(_asslayer, _asstext, false), multiplexer(_assstruct[$ _asskey], "TRUE", "FALSE"));
@@ -386,6 +388,7 @@ function rename_int_button(_asslayer, _assname, _asstext, _asstruct, _asskey, _a
 			keyboard_string = string_filter_positive_integer(keyboard_string);
 			if keyboard_string != "" {
 				_asstruct[$ _asskey] = real(keyboard_string);
+				global.stats_modified = true;
 			}
 			_inst.focus_secondary = "";
 		}
@@ -408,6 +411,7 @@ function rename_float_button(_asslayer, _assname, _asstext, _asstruct, _asskey, 
 			keyboard_string = string_filter_float(keyboard_string);
 			if keyboard_string != "" {
 				_asstruct[$ _asskey] = real(keyboard_string);
+				global.stats_modified = true;
 			}
 			_inst.focus_secondary = "";
 		}
@@ -428,6 +432,7 @@ function rename_string_button(_asslayer, _assname, _asstext, _asstruct, _asskey,
 		if keyboard_check_pressed(vk_enter) or mouse_check_button_pressed(mb_left) {
 			if keyboard_string != "" {
 				_asstruct[$ _asskey] = keyboard_string;
+				global.stats_modified = true;
 			}
 			_inst.focus_secondary = "";
 		}

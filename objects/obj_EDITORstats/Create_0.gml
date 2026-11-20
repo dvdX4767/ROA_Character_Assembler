@@ -2,6 +2,8 @@ focus = "nothing";
 focus_secondary = "";
 page = 1;
 
+global.stats_modified = false;
+
 values = [
 	"char_height",
 	"knockback_adj",
@@ -172,8 +174,10 @@ function fetch_values(_value, _arrpos) {
 		var _line = string_unformat(_file[_pos]);
 		var _p1 = string_length(string("{0}=", _value)) + 1;
 		var _p2 = string_pos(";", _line);
+		if _p2 == 0 {_p2 = string_length(_line)}
 		try {
-			return real(string_copy_alt(_line, _p1, _p2));
+			var _v = string_copy_alt(_line, _p1, _p2);
+			return real(_v);
 		} catch (_err) {
 			show_debug_message(_err);
 			return defaults[_arrpos];
@@ -384,25 +388,24 @@ function render_stat_pages() {
 	}
 }
 
-function save_and_quit() {
+function save_all_stats() {
 	problems = false;
-	if show_question("Do you wish to save changes (if you made any) before leaving?") {
-		var _keys = struct_get_names(allstats);
-		array_foreach(_keys, function(_v, _i) {
-			var _linepos = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/init.gml"), _v + "=", false);
-			if _linepos != -1 {
-				if !archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/init.gml"), _linepos, string("{0} = {1}", _v, allstats[$ _v])) {
-					show_debug_message(string("Failed to save {0} to init.gml, skipping", _v));
-					problems = true;
-				}
-			} else {
-				show_debug_message(string("Didnt find {0}", _v));
-				if !archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/init.gml"), string("{0} = {1}", _v, allstats[$ _v])) {
-					show_debug_message(string("Failed to save {0} to init.gml, skipping", _v));
-					problems = true;
-				}
+	var _keys = struct_get_names(allstats);
+	for (var _i = 0; _i < array_length(_keys); _i++) {
+		var _v = _keys[_i];
+		var _linepos = archive_fetch_gml_string_startswith(AP.SCRIPTS, get_full_path("scripts/init.gml"), _v + "=", false);
+		if _linepos != -1 {
+			if !archive_edit_gml_line(AP.SCRIPTS, get_full_path("scripts/init.gml"), _linepos, string("{0} = {1};", _v, allstats[$ _v])) {
+				show_debug_message(string("Failed to save {0} to init.gml, skipping", _v));
+				problems = true;
 			}
-		})
+		} else {
+			show_debug_message(string("Didnt find {0}", _v));
+			if !archive_edit_gml_newline(AP.SCRIPTS, get_full_path("scripts/init.gml"), string("{0} = {1};", _v, allstats[$ _v])) {
+				show_debug_message(string("Failed to save {0} to init.gml, skipping", _v));
+				problems = true;
+			}
+		}
 	}
 	if problems {
 		show_message("Some stats failed to save, init.gml is either absent or not formatted correctly");

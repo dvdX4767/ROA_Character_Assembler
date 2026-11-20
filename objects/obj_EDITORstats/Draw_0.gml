@@ -18,3 +18,8 @@ if mouse_in_uibox("Stats", "graphic_21052892", cr_handpoint, true) {
 }
 
 render_stat_pages();
+
+if global.stats_modified {
+	global.stats_modified = false;
+	save_all_stats();
+}
